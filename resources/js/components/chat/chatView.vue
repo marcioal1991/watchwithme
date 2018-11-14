@@ -1,19 +1,22 @@
 <template>
     <div class="chat-container columns">
         <div class="chat-users column is-one-quarter">
-            <chat-user :name="user.name" :background-color="user.bgColor" :text-color="user.txtColor"></chat-user>
+            <chat-user :key="user.getName()" v-for="user in $store.state.users" :name="user.getName()" :bg-color="user.getBgColor()" :txt-color="user.getTxtColor()"></chat-user>
         </div>
-        <div class="chat-view-text-wrapper">
-            <div class="chat-view-text">
-                <chat-text></chat-text>
+        <div class="column is-three-quarter">
+            <div class="chat-view-text-wrapper box">
+                <div class="chat-view-text">
+                    <chat-text></chat-text>
+                </div>
+            </div>
+            <div class="chat-writting-box">
+                <chat-writting></chat-writting>
+            </div>
+            <div class="chat-writter-box">
+                <chat-writter-box></chat-writter-box>
             </div>
         </div>
-        <div class="chat-writting-box">
-            <chat-writting></chat-writting>
-        </div>
-        <div>
-            <chat-writter-box></chat-writter-box>
-        </div>
+        
     </div>
 </template>
 
@@ -41,7 +44,8 @@ export default {
         chatText,
         chatWritterBox,
         chatWritting
-    }
+    },
+    props: ['user']
 };
 </script>
 
@@ -50,8 +54,7 @@ export default {
     position: relative;
     
 }
-
-.chat-container .chat-users {
-    
+.chat-view-text-wrapper {
+    height: 300px;
 }
 </style>

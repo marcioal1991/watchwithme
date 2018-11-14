@@ -4,7 +4,7 @@
             {{ accronym }}
         </div>
 
-        <div class="chat-user-name container">
+        <div class="chat-user-name">
             <div class="notification">
                 {{ name }}
             </div>

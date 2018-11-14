@@ -7,7 +7,7 @@ function User (name, colors) {
     this.setName = function (n) {
         name = n;
     };
-
+    this.colors = colors;
     this.getName = function () {
         return name;
     };
@@ -29,15 +29,31 @@ function Message (user, message) {
     }
 
     this.getMessage = function () {
-        return message
+        return message;
     }
 }
+
 let colors = [
     {
         bgColor: "#000",
         txtColor: "#fff",
     },
-]
+    {
+        bgColor: "rgb(159, 26, 26)",
+        txtColor: "#fff",
+    },
+    {
+        bgColor: "rgb(48, 26, 159)",
+        txtColor: "#fff",
+    },    
+    {
+        bgColor: "rgb(159, 26, 153)",
+        txtColor: "#fff",
+    }    
+];
+
+const outro = new User('bot', colors.pop());
+
 const store = new Vuex.Store({
     state: {
         users: [],
@@ -54,14 +70,26 @@ const store = new Vuex.Store({
         },
         setMeLikeUser(state) {
             if (state.user === null) {
-                state.user = new User(state.name);
+                state.user = new User(state.name, colors.pop());                
                 state.users.push(state.user);
             }
+            state.usersWritting.push(state.user);
+            state.users.push(outro);
+            
+            // setInterval(() => {
+            //     if (state.usersWritting.length === 0) {
+            //         state.usersWritting.push(state.user);
+            //         state.usersWritting.push(state.user);
+            //     } else {
+            //         state.usersWritting.pop();
+            //     }
+            // }, 5000);
+
         },
-        enterRoom(state, name) {
+        userEnterRoom(state, name) {
             state.users.push(new User(name));
         },
-        leaveRoom(state, name) {
+        userLeaveRoom(state, name) {
             const users = state.users.filter((user) => {
                 return user.getName() === name;
             });
@@ -103,19 +131,28 @@ const store = new Vuex.Store({
                 }
             }
         },
-        receiveMessage(state, name, message) {
+        receiveMessage(state, dataMessage) {
             const users = state.users.filter((user) => {
-                return user.getName() === name;
+                return user.getName() === dataMessage.name;
             });
             
             if (users.length > 0) {
                 const user = users.pop();
-                const message = new Message(user, message);
+                const message = new Message(user, dataMessage.msg);
                 state.messages.push(message);
-            }
-            
+            }   
+        },
+        addMessage(state, message) {
+            state.messages.push(message);
+        }
+    },
+    actions: {
+        sendMessage(context, data) {
+            console.log(data)
+            const message = new Message(context.state.user, data.message);
+            context.commit('addMessage', message);
         }
     }
-})
+});
 
 export default store;
