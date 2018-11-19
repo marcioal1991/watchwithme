@@ -18,7 +18,7 @@ io.on('connection', function(client) {
     users.push(data);
     client.broadcast.emit('user-enter', data);
     
-    console.log(client.id);
+    
     setTimeout(() => {
         client.emit('welcome-user', users.filter((item) => {
             return item.id !== client.id
@@ -30,6 +30,13 @@ io.on('connection', function(client) {
         client.broadcast.emit("receive-message", {
             id: client.id,
             message: message
+        });
+    });
+
+    client.on("send-image", function (image) {
+        client.broadcast.emit("receive-image", {
+            id: client.id,
+            image: image
         });
     });
     client.on("user-start-writting", function() {

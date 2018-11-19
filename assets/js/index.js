@@ -11523,15 +11523,21 @@ function User(id) {
     };
 }
 
-function Message(user, message) {
+function Message(user, message, image) {
     this.user = user;
-    this.message = message;
+    this.message = message || null;
+    this.image = image || null;
+
     this.getUser = function () {
         return this.user;
     };
 
     this.getMessage = function () {
         return this.message;
+    };
+
+    this.getImage = function () {
+        return this.image;
     };
 }
 
@@ -11583,9 +11589,6 @@ var store = new __WEBPACK_IMPORTED_MODULE_0_vuex__["a" /* default */].Store({
                 }
                 return user;
             });
-
-            // console.log()
-
         },
         userEnterRoom: function userEnterRoom(state, data) {
             state.users.push(new User(data.id));
@@ -11627,7 +11630,21 @@ var store = new __WEBPACK_IMPORTED_MODULE_0_vuex__["a" /* default */].Store({
                 state.messages.push(message);
             }
         },
+        receiveImage: function receiveImage(state, data) {
+            var users = state.users.filter(function (user) {
+                return user.id === data.id;
+            });
+
+            if (users.length > 0) {
+                var user = users.pop();
+                var message = new Message(user, null, data.image);
+                state.messages.push(message);
+            }
+        },
         addMessage: function addMessage(state, message) {
+            state.messages.push(message);
+        },
+        addImage: function addImage(state, message) {
             state.messages.push(message);
         }
     },
@@ -11636,6 +11653,20 @@ var store = new __WEBPACK_IMPORTED_MODULE_0_vuex__["a" /* default */].Store({
             var message = new Message(context.state.user, data.message);
             __WEBPACK_IMPORTED_MODULE_2__websocket__["a" /* default */].emit('send-message', message.getMessage());
             context.commit('addMessage', message);
+        },
+        addImage: function addImage(context, data) {
+            var message = new Message(context.state.user, null, {
+                url: data.original,
+                type: data.filetype,
+                name: data.filename
+            });
+
+            __WEBPACK_IMPORTED_MODULE_2__websocket__["a" /* default */].emit('send-image', {
+                url: data.image,
+                type: data.filetype,
+                name: data.filename
+            });
+            context.commit('addImage', message);
         },
         startWritting: function startWritting(context) {
             __WEBPACK_IMPORTED_MODULE_2__websocket__["a" /* default */].emit('user-start-writting');
@@ -12599,7 +12630,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             var _this = this;
 
             return this.$store.state.users.map(function (user) {
-                console.log(user);
+
                 var data = {
                     name: user.name,
                     bgColor: user.colors.bgColor,
@@ -12922,6 +12953,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     name: 'chat-text',
@@ -12959,9 +12997,28 @@ var render = function() {
             "div",
             { staticClass: "chat-text", class: _vm.boxClass(message) },
             [
-              _c("i", [_vm._v(_vm._s(message.user.name))]),
+              _c("i", { staticStyle: { "font-size": "0.8em" } }, [
+                _vm._v(_vm._s(message.user.name))
+              ]),
               _vm._v(" "),
-              _c("p", [_vm._v(_vm._s(message.message))])
+              message.image == null
+                ? _c("p", [_vm._v(_vm._s(message.message))])
+                : _c("p", [
+                    _c("img", { attrs: { src: message.image.url, alt: "" } }),
+                    _vm._v(" "),
+                    _c("br"),
+                    _vm._v(
+                      "\n                " +
+                        _vm._s(message.image.type) +
+                        "\n                "
+                    ),
+                    _c("br"),
+                    _vm._v(
+                      "\n                " +
+                        _vm._s(message.image.name) +
+                        "\n            "
+                    )
+                  ])
             ]
           )
         ]
@@ -13045,6 +13102,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     data: function data() {
@@ -13055,6 +13116,47 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
     name: 'chat-writter-box',
     methods: {
+        fileChange: function fileChange(event) {
+            var _this = this;
+
+            if (event.target.files.length > 0) {
+                var file = event.target.files[0];
+                var fr = new FileReader();
+
+                fr.onload = function (e) {
+                    var image = new Image();
+                    image.src = e.target.result;
+                    image.onload = function () {
+                        var canvas = document.createElement('canvas');
+                        var context = canvas.getContext('2d');
+
+                        canvas.width = image.width;
+                        canvas.height = image.height;
+                        context.drawImage(image, 0, 0);
+
+                        var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+                        for (var i = 0; i < imageData.data.length; i += 4) {
+                            imageData.data[i] = imageData.data[i] ^ 255;
+                            imageData.data[i + 1] = imageData.data[i + 1] ^ 255;
+                            imageData.data[i + 2] = imageData.data[i + 2] ^ 255;
+                        }
+
+                        context.putImageData(imageData, 0, 0);
+                        _this.$store.dispatch({
+                            type: 'addImage',
+                            image: canvas.toDataURL(),
+                            original: image.src,
+                            filename: file.name,
+                            filetype: file.type
+                        });
+                    };
+                };
+
+                // fr.readAsArrayBuffer(file);
+                fr.readAsDataURL(file);
+            }
+        },
         sendMessage: function sendMessage(e) {
             this.$store.dispatch({
                 type: 'sendMessage',
@@ -13131,10 +13233,26 @@ var render = function() {
           "button",
           {
             staticClass: "button is-primary is-pulled-right",
+            staticStyle: { "margin-left": "10px" },
             attrs: { type: "submit", disabled: _vm.message == "" }
           },
           [_vm._v("Enviar messagem")]
-        )
+        ),
+        _vm._v(" "),
+        _c("label", { staticClass: "button is-primary is-pulled-right" }, [
+          _vm._v("\n            Enviar imagem\n            "),
+          _c("input", {
+            ref: "file",
+            staticStyle: {
+              visibility: "hidden",
+              position: "absolute",
+              top: "-99999999999",
+              left: "-99999999990"
+            },
+            attrs: { type: "file", accept: "image/*" },
+            on: { change: _vm.fileChange }
+          })
+        ])
       ]
     )
   ])
@@ -14567,6 +14685,10 @@ socket.on("receive-message", function (data) {
     __WEBPACK_IMPORTED_MODULE_0__store__["a" /* default */].commit('receiveMessage', data);
 });
 
+socket.on("receive-image", function (data) {
+    __WEBPACK_IMPORTED_MODULE_0__store__["a" /* default */].commit('receiveImage', data);
+});
+
 socket.on("user-start-writting", function (data) {
     __WEBPACK_IMPORTED_MODULE_0__store__["a" /* default */].commit('userStartWritting', {
         id: data.id
@@ -14580,7 +14702,6 @@ socket.on("user-stop-writting", function (data) {
 });
 
 socket.on("user-set-name", function (data) {
-    console.log(data);
     __WEBPACK_IMPORTED_MODULE_0__store__["a" /* default */].dispatch({
         type: 'setName',
         data: data
@@ -14594,6 +14715,7 @@ socket.on("user-enter", function (data) {
 socket.on("user-leave", function (data) {
     __WEBPACK_IMPORTED_MODULE_0__store__["a" /* default */].commit('userLeaveRoom', data);
 });
+
 /* harmony default export */ __webpack_exports__["a"] = (socket);
 
 /***/ }),

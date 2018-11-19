@@ -32,7 +32,7 @@ export default {
         users() {
             
             return this.$store.state.users.map((user) => {
-                console.log(user)
+                
                 let data = {
                     name: user.name,
                     bgColor: user.colors.bgColor,

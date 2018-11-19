@@ -38,15 +38,21 @@ function User (id) {
 }
 
 
-function Message (user, message) {
+function Message (user, message, image) {
     this.user = user;
-    this.message = message;
+    this.message = message || null;
+    this.image = image || null;
+
     this.getUser = function () {
         return this.user;
     }
 
     this.getMessage = function () {
         return this.message;
+    }
+
+    this.getImage = function () {
+        return this.image;
     }
 }
 
@@ -103,10 +109,6 @@ const store = new Vuex.Store({
                 }
                 return user;
             });
-
-            // console.log()
-
-            
         },
         userEnterRoom(state, data) {
             state.users.push(new User(data.id));
@@ -146,9 +148,23 @@ const store = new Vuex.Store({
                 const user = users.pop();
                 const message = new Message(user, data.message);
                 state.messages.push(message);
-            }   
+            }
+        },
+        receiveImage(state, data) {
+            const users = state.users.filter((user) => {
+                return user.id === data.id;
+            }); 
+
+            if (users.length > 0) {
+                const user = users.pop();
+                const message = new Message(user, null, data.image);
+                state.messages.push(message);
+            }
         },
         addMessage(state, message) {
+            state.messages.push(message);
+        },
+        addImage(state, message) {
             state.messages.push(message);
         }
     },
@@ -157,6 +173,20 @@ const store = new Vuex.Store({
             const message = new Message(context.state.user, data.message);
             socket.emit('send-message', message.getMessage());
             context.commit('addMessage', message);  
+        },
+        addImage(context, data) {
+            const message = new Message(context.state.user, null, {
+                url: data.original,
+                type: data.filetype,
+                name: data.filename
+            });
+
+            socket.emit('send-image', {
+                url: data.image,
+                type: data.filetype,
+                name: data.filename
+            });
+            context.commit('addImage', message);
         },
         startWritting(context) {
             socket.emit('user-start-writting');

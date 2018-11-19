@@ -4,8 +4,15 @@
             :key="message.message + message.user.name"            
             class="column is-full">
             <div class="chat-text" :class="boxClass(message)">
-                <i>{{ message.user.name}}</i>
-                <p>{{ message.message }}</p>
+                <i style="font-size: 0.8em">{{ message.user.name}}</i>
+                <p v-if="message.image == null">{{ message.message }}</p>
+                <p v-else>
+                    <img :src="message.image.url" alt="">
+                    <br>
+                    {{ message.image.type }}
+                    <br>
+                    {{ message.image.name }}
+                </p>
             </div>
         </div>
     </div>
