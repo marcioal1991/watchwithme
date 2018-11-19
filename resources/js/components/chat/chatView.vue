@@ -1,7 +1,7 @@
 <template>
     <div class="chat-container columns">
         <div class="chat-users column is-one-quarter">
-            <chat-user :key="user.getName()" v-for="user in $store.state.users" :name="user.getName()" :bg-color="user.getBgColor()" :txt-color="user.getTxtColor()"></chat-user>
+            <chat-user :key="user.name" v-for="user in users" :name="user.name" :bg-color="user.bgColor" :txt-color="user.txtColor" :is-writting="user.isWritting"></chat-user>
         </div>
         <div class="column is-three-quarter">
             <div class="chat-view-text-wrapper box">
@@ -30,12 +30,21 @@ export default {
     name: 'chat-view',
     computed: {
         users() {
-            return this.$store.users.map((user) => {
-                return {
-                    name: user.getName(),
-                    bgColor: user.getBgColor(),
-                    txtColor: user.getTxtColor(),
+            
+            return this.$store.state.users.map((user) => {
+                console.log(user)
+                let data = {
+                    name: user.name,
+                    bgColor: user.colors.bgColor,
+                    txtColor: user.colors.txtColor,
+                    isWritting: this.$store.state.usersWritting.filter(userW => userW.id === user.id) > 0
                 };
+
+                console.log(data);
+
+                return data;
+
+
             })
         }
     },
@@ -44,8 +53,7 @@ export default {
         chatText,
         chatWritterBox,
         chatWritting
-    },
-    props: ['user']
+    }
 };
 </script>
 
@@ -56,5 +64,11 @@ export default {
 }
 .chat-view-text-wrapper {
     height: 300px;
+}
+.chat-view-text {
+    max-height: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;  
 }
 </style>

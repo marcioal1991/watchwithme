@@ -11,7 +11,7 @@ export default {
     computed: {
         usersNames() {
             return this.$store.state.usersWritting.map((user) => {
-                return user.getName();
+                return user.name;
             });
         },
         writtingText() {

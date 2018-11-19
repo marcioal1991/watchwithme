@@ -3,28 +3,72 @@ const app = express();
 const hostname = "0.0.0.0";
 const port = 80;
 const path = require('path');
-var http = require('http').Server(app);
-var io = require("socket.io")(http);
+const http = require('http').Server(app);
+const io = require("socket.io")(http);
+
 app.use(express.static(path.resolve(__dirname, '.')));
 
+let users = [];
 
-io.on('connection', function(client){
-    console.log("Connection established!");
-    client.on("candidate", function(msg){
-        console.log("candidate message recieved!");
-        client.broadcast.emit("candidate", msg);
+io.on('connection', function(client) {
+    let data = {
+        id: client.id
+    };
+
+    users.push(data);
+    client.broadcast.emit('user-enter', data);
+    
+    console.log(client.id);
+    setTimeout(() => {
+        client.emit('welcome-user', users.filter((item) => {
+            return item.id !== client.id
+        }));
+    }, 1000)
+    
+
+    client.on("send-message", function(message) {
+        client.broadcast.emit("receive-message", {
+            id: client.id,
+            message: message
+        });
     });
-    client.on("sdp", function(msg){
-        console.log("sdp message broadcasted!");
-        client.broadcast.emit("sdp", msg);
+    client.on("user-start-writting", function() {
+        client.broadcast.emit("user-start-writting", {
+            id: client.id
+        });
     });
-    client.on("desc", function(desc){
-        console.log("description received!");
-        client.broadcast.emit("desc", desc);
+    client.on("user-stop-writting", function() {
+        client.broadcast.emit("user-stop-writting", {
+            id: client.id
+        });
     });
-    client.on("answer", function(answer){
-        console.log("answer broadcasted");
-        client.broadcast.emit("answer", answer);
+    
+    client.on("user-set-name", function(name) {
+        users = users.map(function(item) {
+            if (item.id === client.id) {
+                item.name = name;
+            }
+
+            return item;
+        });
+        client.broadcast.emit("user-set-name", {
+            id: client.id,
+            name: name
+        });
+    });
+
+    client.on("disconnect", function() {
+        users = users.filter((item) => {
+            if (item.id === client.id) {
+                return false;
+            }
+
+            return item;
+        });
+
+        client.broadcast.emit("user-leave", {
+            id: client.id
+        });
     });
 });
 

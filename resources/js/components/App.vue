@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="app-container" v-if="$store.state.user === null">
+        <div class="app-container" v-if="$store.state.name === ''">
             <div class="container">                
                 <div class="columns is-centered is-multiline has-text-centered">
                     <div class="is-full column">
@@ -31,9 +31,9 @@
                     <div class="column is-8">
                         <chat-component></chat-component>
                     </div>
-                    <!-- <div class="column is-4">
+                    <div class="column is-4">
                         <video-component></video-component>
-                    </div> -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -65,14 +65,12 @@ export default {
             }
             this.showAlert = false;
             this.$store.commit('setName', this.name);
-            this.$store.commit('setMeLikeUser', this.name);                
         },
         closeAlert() {
             this.showAlert = false;
         }
 
-    }
-
+    },
 };
 </script>
 <style>

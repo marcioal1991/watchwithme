@@ -1,35 +1,52 @@
 import Vuex from 'vuex';
 import Vue from 'vue';
+import socket from '@/websocket';
 
 Vue.use(Vuex);
 
-function User (name, colors) {
-    this.setName = function (n) {
-        name = n;
+function User (id) {
+    this.colors = {};
+    this.name = '';
+    this.id = id;
+
+    this.getId = function() {
+        return this.id;
     };
-    this.colors = colors;
-    this.getName = function () {
-        return name;
+    
+    this.setColors = function (clrs) {
+        this.colors = clrs || {};
     };
 
-    this.getBgColor = function () {
-        return colors.bgColor;
+    this.setName = function (n) {
+        if (n === null || n === undefined) {
+            n = "";
+        }
+        this.name = String(n);
+    };
+    
+    this.getName = function () {        
+        return this.name;
+    };
+
+    this.getBgColor = function () {     
+        return this.colors.bgColor;
     }
 
     this.getTxtColor = function () {
-        return colors.txtColor;
+        return this.colors.txtColor;
     }
 }
 
 
 function Message (user, message) {
-    
+    this.user = user;
+    this.message = message;
     this.getUser = function () {
-        return user;
+        return this.user;
     }
 
     this.getMessage = function () {
-        return message;
+        return this.message;
     }
 }
 
@@ -52,75 +69,64 @@ let colors = [
     }    
 ];
 
-const outro = new User('bot', colors.pop());
-
 const store = new Vuex.Store({
     state: {
         users: [],
         messages: [],
         name: '',
-        sdp: '',
         user: null,
-        usersWritting: [],
-        synced: false
+        usersWritting: []
     },
     mutations: {
+        enterInRoom(state, userId) {
+            state.user = new User(userId);
+            state.user.setColors(colors.pop() || {});
+            state.users.push(state.user);
+        },
+        receiveLoggedUsers(state, dataArray) {
+            dataArray.forEach((dataUser) => {
+                const user = new User(dataUser.id);
+                user.setName(dataUser.name);
+                user.setColors(colors.pop() || {});
+                state.users.push(user);
+            })
+        },
         setName(state, name) {
             state.name = name;
+            state.user.name = name;
+            socket.emit('user-set-name', name);
         },
-        setMeLikeUser(state) {
-            if (state.user === null) {
-                state.user = new User(state.name, colors.pop());                
-                state.users.push(state.user);
-            }
-            state.usersWritting.push(state.user);
-            state.users.push(outro);
-            
-            // setInterval(() => {
-            //     if (state.usersWritting.length === 0) {
-            //         state.usersWritting.push(state.user);
-            //         state.usersWritting.push(state.user);
-            //     } else {
-            //         state.usersWritting.pop();
-            //     }
-            // }, 5000);
-
-        },
-        userEnterRoom(state, name) {
-            state.users.push(new User(name));
-        },
-        userLeaveRoom(state, name) {
-            const users = state.users.filter((user) => {
-                return user.getName() === name;
+        userSetName(state, data) {
+            state.users = state.users.map((user) => {
+                if (user.id === data.data.id) {
+                    user.name = data.data.name;
+                }
+                return user;
             });
 
-            if (users.length > 0) {
-                const user = users.pop();
-                const pos = state.usersWritting.indexOf(user);
+            // console.log()
 
-                if (pos !== -1) {
-                    state.users.splice(pos, 1);
-                }
-            }
-        },
-        stopWritting(state, name) {
-            const users = state.users.filter((user) => {
-                return user.getName() === name;
-            });
-
-            if (users.length > 0) {
-                const user = users.pop();
-                const pos = state.usersWritting.indexOf(user);
-
-                if (pos !== -1) {
-                    state.usersWritting.splice(pos, 1);
-                }
-            }
             
         },
-        startWritting(state, name) {
+        userEnterRoom(state, data) {
+            state.users.push(new User(data.id));
+        },
+        userLeaveRoom(state, data) {
+            state.users = state.users.filter((user) => {
+                return user.id !== data.id;
+            });
+            state.usersWritting.filter((user) => {
+                return user.id !== data.id;
+            });            
+        },
+        userStopWritting(state, data) {
+            state.usersWritting = state.usersWritting.filter((user) => {
+                return user.id !== data.id;
+            });            
+        },
+        userStartWritting(state, data) {
             const users = state.users.filter((user) => {
-                return user.getName() === name;
+                return user.id === data.id;
             });
 
             if (users.length > 0) {
@@ -131,14 +137,14 @@ const store = new Vuex.Store({
                 }
             }
         },
-        receiveMessage(state, dataMessage) {
+        receiveMessage(state, data) {
             const users = state.users.filter((user) => {
-                return user.getName() === dataMessage.name;
+                return user.id === data.id;
             });
             
             if (users.length > 0) {
                 const user = users.pop();
-                const message = new Message(user, dataMessage.msg);
+                const message = new Message(user, data.message);
                 state.messages.push(message);
             }   
         },
@@ -148,9 +154,18 @@ const store = new Vuex.Store({
     },
     actions: {
         sendMessage(context, data) {
-            console.log(data)
             const message = new Message(context.state.user, data.message);
-            context.commit('addMessage', message);
+            socket.emit('send-message', message.getMessage());
+            context.commit('addMessage', message);  
+        },
+        startWritting(context) {
+            socket.emit('user-start-writting');
+        },
+        stopWritting(context) {
+            socket.emit('user-stop-writting');
+        },
+        setName(context, data) {            
+            context.commit('userSetName', data);
         }
     }
 });

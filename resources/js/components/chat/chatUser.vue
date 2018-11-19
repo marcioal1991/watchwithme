@@ -1,6 +1,6 @@
 <template>
     <div class="chat-user-container">
-        <div class="chat-user-icon" :class="{'chat-user-talking': isTalking}" :style="{backgroundColor: backgroundColor, color: color}">
+        <div class="chat-user-icon" :class="{'chat-user-talking': isWritting}" :style="{backgroundColor: backgroundColor, color: color}">
             {{ accronym }}
         </div>
 
@@ -16,7 +16,7 @@
 export default {
     name: 'chat-user',
     props: {
-        isTalking: {
+        isWritting: {
             type: Boolean,
             default: false
         },
@@ -30,11 +30,17 @@ export default {
         },
         name: {
             type: String,
-            required: true
+            required: false,
+            default() {
+                return "Desconhecido"
+            }
         }
     },
     computed: {
         accronym() {
+            if (this.name === "Desconhecido") {
+                return "?";
+            }
             return this.name.split(' ').map((word) => {
                 return word.charAt(0);
             }).join('').toUpperCase();

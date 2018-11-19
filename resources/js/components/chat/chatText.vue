@@ -1,9 +1,12 @@
 <template>
     <div class="columns is-clearfix is-multiline">
         <div v-for="message in $store.state.messages" 
-            :key="message.getMessage() + message.getUser().getName()"            
+            :key="message.message + message.user.name"            
             class="column is-full">
-            <p class="chat-text" :class="boxClass(message)">{{ message.getMessage() }}</p>
+            <div class="chat-text" :class="boxClass(message)">
+                <i>{{ message.user.name}}</i>
+                <p>{{ message.message }}</p>
+            </div>
         </div>
     </div>
 </template>
@@ -12,7 +15,7 @@ export default {
     name: 'chat-text',
     methods: {
         boxClass(message) {            
-            if (message.getUser() === this.$store.state.user) {
+            if (message.user === this.$store.state.user) {
                 return ['is-pulled-right', 'has-background-info', 'has-text-white'];
             } else {
                 return ['is-pulled-left', 'has-background-light', 'has-text-dark'];

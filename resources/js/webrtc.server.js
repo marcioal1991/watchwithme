@@ -29,7 +29,6 @@ dataChannel.onerror = function () {
 };
 
 sendMessage.addEventListener("keyup", function (evt) {
-
     remoteDataChannel.send(sendMessage.value);
 });
 //Listen for ICE Candidates and send them to remote peers

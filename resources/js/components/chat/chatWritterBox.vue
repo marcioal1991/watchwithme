@@ -27,7 +27,22 @@ export default {
             });
 
             this.message = '';
-        }        
+        }
+    },
+    watch: {
+        message(newValue, oldValue) {
+            if (!((newValue === '' && oldValue === '') || (newValue !== '' && oldValue !== ''))) {
+                if (newValue === '' && oldValue !== '') {
+                    this.$store.dispatch({
+                        type: 'stopWritting'
+                    });
+                } else if (newValue !== '' && oldValue === '') {
+                    this.$store.dispatch({
+                        type: 'startWritting'
+                    });
+                }
+            }
+        }
     }
 }
 </script>

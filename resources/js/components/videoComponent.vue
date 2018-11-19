@@ -1,23 +1,29 @@
 <template>
     <div>
         <div>
-            <video-container></video-container>
+            <video ref="video" :src="$store.state.stream" autoplay></video>
         </div>
-        <div>
+        <!-- <div>
             <video-controls></video-controls>
         </div>
         <div>
             <video-list></video-list>
-        </div>
+        </div> -->
     </div>
 </template>
 
 <script>
 import videoContainer from '@/components/video/videoContainer';
-import videoControls from '@/components/video/videoControls';
-import videoList from '@/components/video/videoList';
+// import videoControls from '@/components/video/videoControls';
+// import videoList from '@/components/video/videoList';
 
 export default {
-    name: 'video-component'
+    name: 'video-component',    
+    mounted() {        
+	    
+    },
+    updated() {
+        // console.log(this.$store.state.stream)
+    }
 };
 </script>
