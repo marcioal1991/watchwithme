@@ -10,7 +10,12 @@
             <button style="margin-left:10px" type="submit" :disabled="message == ''" class="button is-primary is-pulled-right">Enviar messagem</button>
             <label class="button is-primary is-pulled-right">
                 Enviar imagem
-                <input ref="file" type="file" accept="image/*" style="visibility:hidden; position: absolute; top: -99999999999; left: -99999999990" v-on:change="fileChange">
+                <input ref="file" type="file" accept="image/*" style="visibility:hidden; position: absolute; top: -99999999999; left: -99999999990" v-on:change="imageFileChange">
+            </label>
+
+            <label class="button is-primary is-pulled-right">
+                Enviar video
+                <input ref="file" type="file" accept="video/*" style="visibility:hidden; position: absolute; top: -99999999999; left: -99999999990" v-on:change="videoFileChange">
             </label>
         </form>
     </div>
@@ -24,7 +29,7 @@ export default {
     },
     name: 'chat-writter-box',
     methods: {
-        fileChange(event) {
+        imageFileChange(event) {
             if (event.target.files.length > 0) {
                 const file = event.target.files[0];
                 const fr = new FileReader();
@@ -61,6 +66,21 @@ export default {
 
                 // fr.readAsArrayBuffer(file);
                 fr.readAsDataURL(file);
+            }
+        },
+        videoFileChange(event) {
+            if (event.target.files.length > 0) {
+                const file = event.target.files[0];
+                // const fr = new FileReader();
+                    this.$store.dispatch({
+                        type: 'sendVideo',
+                        video: file
+                    }); 
+                    
+                // fr.onload = (e) => {                    
+                // };
+
+                // fr.readAsArrayBuffer(file);
             }
         },
         sendMessage(e) {        

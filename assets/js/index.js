@@ -11523,10 +11523,11 @@ function User(id) {
     };
 }
 
-function Message(user, message, image) {
+function Message(user, message, image, video) {
     this.user = user;
     this.message = message || null;
     this.image = image || null;
+    this.video = video || null;
 
     this.getUser = function () {
         return this.user;
@@ -11539,6 +11540,8 @@ function Message(user, message, image) {
     this.getImage = function () {
         return this.image;
     };
+
+    this.getVideo = function () {};
 }
 
 var colors = [{
@@ -11641,10 +11644,26 @@ var store = new __WEBPACK_IMPORTED_MODULE_0_vuex__["a" /* default */].Store({
                 state.messages.push(message);
             }
         },
+        receiveVideo: function receiveVideo(state, data) {
+            var users = state.users.filter(function (user) {
+                return user.id === data.id;
+            });
+            // console.log(data)
+            var blob = new Blob([new Uint8Array(data.video)]);
+            console.log(blob);
+            if (users.length > 0) {
+                var user = users.pop();
+                var message = new Message(user, null, null, window.URL.createObjectURL(blob));
+                state.messages.push(message);
+            }
+        },
         addMessage: function addMessage(state, message) {
             state.messages.push(message);
         },
         addImage: function addImage(state, message) {
+            state.messages.push(message);
+        },
+        addVideo: function addVideo(state, message) {
             state.messages.push(message);
         }
     },
@@ -11653,6 +11672,11 @@ var store = new __WEBPACK_IMPORTED_MODULE_0_vuex__["a" /* default */].Store({
             var message = new Message(context.state.user, data.message);
             __WEBPACK_IMPORTED_MODULE_2__websocket__["a" /* default */].emit('send-message', message.getMessage());
             context.commit('addMessage', message);
+        },
+        sendVideo: function sendVideo(context, data) {
+            var message = new Message(context.state.user, null, null, window.URL.createObjectURL(data.video));
+            __WEBPACK_IMPORTED_MODULE_2__websocket__["a" /* default */].emit('send-video', data.video);
+            context.commit('addVideo', message);
         },
         addImage: function addImage(context, data) {
             var message = new Message(context.state.user, null, {
@@ -12640,8 +12664,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                     }) > 0
                 };
 
-                console.log(data);
-
                 return data;
             });
         }
@@ -12960,6 +12982,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     name: 'chat-text',
@@ -13001,24 +13026,30 @@ var render = function() {
                 _vm._v(_vm._s(message.user.name))
               ]),
               _vm._v(" "),
-              message.image == null
-                ? _c("p", [_vm._v(_vm._s(message.message))])
-                : _c("p", [
-                    _c("img", { attrs: { src: message.image.url, alt: "" } }),
-                    _vm._v(" "),
-                    _c("br"),
-                    _vm._v(
-                      "\n                " +
-                        _vm._s(message.image.type) +
-                        "\n                "
-                    ),
-                    _c("br"),
-                    _vm._v(
-                      "\n                " +
-                        _vm._s(message.image.name) +
-                        "\n            "
-                    )
+              message.video !== null
+                ? _c("p", [
+                    _c("video", {
+                      attrs: { src: message.video, controls: "true" }
+                    })
                   ])
+                : message.image != null
+                  ? _c("p", [
+                      _c("img", { attrs: { src: message.image.url, alt: "" } }),
+                      _vm._v(" "),
+                      _c("br"),
+                      _vm._v(
+                        "\n                " +
+                          _vm._s(message.image.type) +
+                          "\n                "
+                      ),
+                      _c("br"),
+                      _vm._v(
+                        "\n                " +
+                          _vm._s(message.image.name) +
+                          "\n            "
+                      )
+                    ])
+                  : _c("p", [_vm._v(_vm._s(message.message))])
             ]
           )
         ]
@@ -13106,6 +13137,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     data: function data() {
@@ -13116,7 +13152,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
     name: 'chat-writter-box',
     methods: {
-        fileChange: function fileChange(event) {
+        imageFileChange: function imageFileChange(event) {
             var _this = this;
 
             if (event.target.files.length > 0) {
@@ -13155,6 +13191,21 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
                 // fr.readAsArrayBuffer(file);
                 fr.readAsDataURL(file);
+            }
+        },
+        videoFileChange: function videoFileChange(event) {
+            if (event.target.files.length > 0) {
+                var file = event.target.files[0];
+                // const fr = new FileReader();
+                this.$store.dispatch({
+                    type: 'sendVideo',
+                    video: file
+                });
+
+                // fr.onload = (e) => {                    
+                // };
+
+                // fr.readAsArrayBuffer(file);
             }
         },
         sendMessage: function sendMessage(e) {
@@ -13250,7 +13301,22 @@ var render = function() {
               left: "-99999999990"
             },
             attrs: { type: "file", accept: "image/*" },
-            on: { change: _vm.fileChange }
+            on: { change: _vm.imageFileChange }
+          })
+        ]),
+        _vm._v(" "),
+        _c("label", { staticClass: "button is-primary is-pulled-right" }, [
+          _vm._v("\n            Enviar video\n            "),
+          _c("input", {
+            ref: "file",
+            staticStyle: {
+              visibility: "hidden",
+              position: "absolute",
+              top: "-99999999999",
+              left: "-99999999990"
+            },
+            attrs: { type: "file", accept: "video/*" },
+            on: { change: _vm.videoFileChange }
           })
         ])
       ]
@@ -14687,6 +14753,10 @@ socket.on("receive-message", function (data) {
 
 socket.on("receive-image", function (data) {
     __WEBPACK_IMPORTED_MODULE_0__store__["a" /* default */].commit('receiveImage', data);
+});
+
+socket.on("receive-video", function (data) {
+    __WEBPACK_IMPORTED_MODULE_0__store__["a" /* default */].commit('receiveVideo', data);
 });
 
 socket.on("user-start-writting", function (data) {

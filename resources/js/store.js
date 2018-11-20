@@ -38,22 +38,27 @@ function User (id) {
 }
 
 
-function Message (user, message, image) {
+function Message (user, message, image, video) {
     this.user = user;
     this.message = message || null;
     this.image = image || null;
+    this.video = video || null;
 
     this.getUser = function () {
         return this.user;
-    }
+    };
 
     this.getMessage = function () {
         return this.message;
-    }
+    };
 
     this.getImage = function () {
         return this.image;
-    }
+    };
+
+    this.getVideo = function () {
+
+    };
 }
 
 let colors = [
@@ -161,10 +166,26 @@ const store = new Vuex.Store({
                 state.messages.push(message);
             }
         },
+        receiveVideo(state, data) {
+            const users = state.users.filter((user) => {
+                return user.id === data.id;
+            });
+            
+            const blob = new Blob([new Uint8Array(data.video)]);
+            
+            if (users.length > 0) {
+                const user = users.pop();
+                const message = new Message(user, null, null, window.URL.createObjectURL(blob));
+                state.messages.push(message);
+            }
+        },
         addMessage(state, message) {
             state.messages.push(message);
         },
         addImage(state, message) {
+            state.messages.push(message);
+        },
+        addVideo(state, message) {
             state.messages.push(message);
         }
     },
@@ -173,6 +194,11 @@ const store = new Vuex.Store({
             const message = new Message(context.state.user, data.message);
             socket.emit('send-message', message.getMessage());
             context.commit('addMessage', message);  
+        },
+        sendVideo(context, data) {
+            const message = new Message(context.state.user, null, null, window.URL.createObjectURL(data.video));            
+            socket.emit('send-video', data.video);
+            context.commit('addVideo', message);
         },
         addImage(context, data) {
             const message = new Message(context.state.user, null, {

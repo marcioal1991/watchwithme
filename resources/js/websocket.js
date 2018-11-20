@@ -18,6 +18,10 @@ socket.on("receive-image", function (data) {
     store.commit('receiveImage', data);
 });
 
+socket.on("receive-video", function (data) {
+    store.commit('receiveVideo', data);
+});
+
 socket.on("user-start-writting", function (data) {
     store.commit('userStartWritting', {
         id: data.id    

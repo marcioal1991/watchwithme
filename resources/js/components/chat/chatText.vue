@@ -5,14 +5,17 @@
             class="column is-full">
             <div class="chat-text" :class="boxClass(message)">
                 <i style="font-size: 0.8em">{{ message.user.name}}</i>
-                <p v-if="message.image == null">{{ message.message }}</p>
-                <p v-else>
+                <p v-if="message.video !== null">
+                    <video :src="message.video" controls="true"></video>
+                </p>
+                <p v-else-if="message.image != null">
                     <img :src="message.image.url" alt="">
                     <br>
                     {{ message.image.type }}
                     <br>
                     {{ message.image.name }}
                 </p>
+                <p v-else>{{ message.message }}</p>
             </div>
         </div>
     </div>

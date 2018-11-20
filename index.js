@@ -39,6 +39,13 @@ io.on('connection', function(client) {
             image: image
         });
     });
+
+    client.on("send-video", function (video) {
+        client.broadcast.emit("receive-video", {
+            id: client.id,
+            video: video
+        });
+    });
     client.on("user-start-writting", function() {
         client.broadcast.emit("user-start-writting", {
             id: client.id

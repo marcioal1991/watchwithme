@@ -40,8 +40,6 @@ export default {
                     isWritting: this.$store.state.usersWritting.filter(userW => userW.id === user.id) > 0
                 };
 
-                console.log(data);
-
                 return data;
 
 
