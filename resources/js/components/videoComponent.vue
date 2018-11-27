@@ -14,16 +14,7 @@
 
 <script>
 import videoContainer from '@/components/video/videoContainer';
-// import videoControls from '@/components/video/videoControls';
-// import videoList from '@/components/video/videoList';
-
 export default {
-    name: 'video-component',    
-    mounted() {        
-	    
-    },
-    updated() {
-        // console.log(this.$store.state.stream)
-    }
+    name: 'video-component',        
 };
 </script>

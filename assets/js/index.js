@@ -11648,9 +11648,7 @@ var store = new __WEBPACK_IMPORTED_MODULE_0_vuex__["a" /* default */].Store({
             var users = state.users.filter(function (user) {
                 return user.id === data.id;
             });
-            // console.log(data)
             var blob = new Blob([new Uint8Array(data.video)]);
-            console.log(blob);
             if (users.length > 0) {
                 var user = users.pop();
                 var message = new Message(user, null, null, window.URL.createObjectURL(blob));
