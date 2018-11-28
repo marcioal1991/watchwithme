@@ -117,6 +117,9 @@ const store = new Vuex.Store({
         },
         userEnterRoom(state, data) {
             state.users.push(new User(data.id));
+            const o = new Audio();
+            o.src = 'http://assets.jetimob.com/sons/new_chat_out.mp3';
+            o.play();
         },
         userLeaveRoom(state, data) {
             state.users = state.users.filter((user) => {
@@ -153,6 +156,9 @@ const store = new Vuex.Store({
                 const user = users.pop();
                 const message = new Message(user, data.message);
                 state.messages.push(message);
+                const o = new Audio();
+                o.src = 'http://assets.jetimob.com/sons/new_chat_out.mp3';
+                o.play()
             }
         },
         receiveImage(state, data) {
@@ -164,6 +170,9 @@ const store = new Vuex.Store({
                 const user = users.pop();
                 const message = new Message(user, null, data.image);
                 state.messages.push(message);
+                const o = new Audio();
+                o.src = 'http://assets.jetimob.com/sons/new_chat_out.mp3';
+                o.play();
             }
         },
         receiveVideo(state, data) {
@@ -177,6 +186,9 @@ const store = new Vuex.Store({
                 const user = users.pop();
                 const message = new Message(user, null, null, window.URL.createObjectURL(blob));
                 state.messages.push(message);
+                const o = new Audio();
+                o.src = 'http://assets.jetimob.com/sons/new_chat_out.mp3';
+                o.play();
             }
         },
         addMessage(state, message) {

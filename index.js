@@ -18,7 +18,7 @@ io.on('connection', function(client) {
     users.push(data);
     client.broadcast.emit('user-enter', data);
     
-    
+    console.log(users);
     setTimeout(() => {
         client.emit('welcome-user', users.filter((item) => {
             return item.id !== client.id

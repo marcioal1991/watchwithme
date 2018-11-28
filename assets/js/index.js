@@ -11595,6 +11595,9 @@ var store = new __WEBPACK_IMPORTED_MODULE_0_vuex__["a" /* default */].Store({
         },
         userEnterRoom: function userEnterRoom(state, data) {
             state.users.push(new User(data.id));
+            var o = new Audio();
+            o.src = 'http://assets.jetimob.com/sons/new_chat_out.mp3';
+            o.play();
         },
         userLeaveRoom: function userLeaveRoom(state, data) {
             state.users = state.users.filter(function (user) {
@@ -11631,6 +11634,9 @@ var store = new __WEBPACK_IMPORTED_MODULE_0_vuex__["a" /* default */].Store({
                 var user = users.pop();
                 var message = new Message(user, data.message);
                 state.messages.push(message);
+                var o = new Audio();
+                o.src = 'http://assets.jetimob.com/sons/new_chat_out.mp3';
+                o.play();
             }
         },
         receiveImage: function receiveImage(state, data) {
@@ -11642,17 +11648,25 @@ var store = new __WEBPACK_IMPORTED_MODULE_0_vuex__["a" /* default */].Store({
                 var user = users.pop();
                 var message = new Message(user, null, data.image);
                 state.messages.push(message);
+                var o = new Audio();
+                o.src = 'http://assets.jetimob.com/sons/new_chat_out.mp3';
+                o.play();
             }
         },
         receiveVideo: function receiveVideo(state, data) {
             var users = state.users.filter(function (user) {
                 return user.id === data.id;
             });
+
             var blob = new Blob([new Uint8Array(data.video)]);
+
             if (users.length > 0) {
                 var user = users.pop();
                 var message = new Message(user, null, null, window.URL.createObjectURL(blob));
                 state.messages.push(message);
+                var o = new Audio();
+                o.src = 'http://assets.jetimob.com/sons/new_chat_out.mp3';
+                o.play();
             }
         },
         addMessage: function addMessage(state, message) {
@@ -13578,15 +13592,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 
 
-// import videoControls from '@/components/video/videoControls';
-// import videoList from '@/components/video/videoList';
-
 /* harmony default export */ __webpack_exports__["default"] = ({
-    name: 'video-component',
-    mounted: function mounted() {},
-    updated: function updated() {
-        // console.log(this.$store.state.stream)
-    }
+    name: 'video-component'
 });
 
 /***/ }),
